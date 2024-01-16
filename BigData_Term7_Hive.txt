@@ -1,0 +1,167 @@
+
+#################################################################
+Hive steps to create movie table
+#################################################################
+
+hive
+
+create database mca;
+
+use mca;
+
+create table movie(id int, title string, genere string, studio string, audiencescore int, profit float,rtscore int, sales float, year int )row format delimited fields terminated by ',' stored as textfile;
+
+LOAD DATA INPATH '/MCA/movie.csv' OVERWRITE INTO TABLE movie;
+
+1)studio who have combined sales of all studios
+select studio,sum(profit) from movie group by studio; 
+
+2)movies whose audience score is between 60 and 70
+select id, title from movie where audiencescore > 60 and audiencescore < 70;
+
+3)movies with profit more then 5 million and score more then 70
+select title from movie where profit > 5 and rtscore > 70;
+
+4)no. of movies from each studio
+select count(title), studio from movie group by studio;
+
+5)top 3 profitable movies of 2009
+select id, title, profit from movie where year = 2009 order by profit desc limit 3;
+
+
+#######################################################################################
+Example
+#######################################################################################
+
+
+[root@sandbox ~]# hive                                                                                                                                 
+WARNING: Use "yarn jar" to launch YARN applications.                                                                                                   
+                                                                                                                                                       
+Logging initialized using configuration in file:/etc/hive/2.4.0.0-169/0/hive-log4j.properties                                                          
+hive> create database mca;                                                                                                                             
+OK                                                                                                                                                     
+Time taken: 2.26 seconds                                                                                                                               
+hive> use mca;                                                                                                                                         
+OK                                                                                                                                                     
+Time taken: 5.623 seconds                                                                                                                              
+hive> create table movie(id int, title string, genere string, studio string, audiencescore int, profit float,rtscore int, sales float, year int )row fo
+rmat delimited fields terminated by ',' stored as textfile;
+OK                                                                                                                                                     
+Time taken: 1.687 seconds                                                                                                                              
+hive> LOAD DATA INPATH '/MCA/movie.csv' OVERWRITE INTO TABLE movie;                                                                                    
+Loading data to table mca.movie                                                                                                                        
+chmod: changing permissions of 'hdfs://sandbox.hortonworks.com:8020/apps/hive/warehouse/mca.db/movie/movie.csv': Permission denied. user=root is not th
+e owner of inode=movie.csv                                                                                                                             
+Table mca.movie stats: [numFiles=1, totalSize=5083]                                                                                                    
+OK                                                                                                                                                     
+Time taken: 1.912 seconds                                                                                                                              
+hive> select studio,sum(profit) from movie group by studio;                                                                                            
+Query ID = root_20220101142825_47b8dd5d-d5a1-4064-bb47-cc4ae55bc414                                                                                    
+Total jobs = 1                                                                                                                                         
+Launching Job 1 out of 1                                                                                                                               
+                                                                                                                                                       
+                                                                                                                                                       
+Status: Running (Executing on YARN cluster with App id application_1641040127148_0008)                                                                 
+                                                                                                                                                       
+--------------------------------------------------------------------------------
+        VERTICES      STATUS  TOTAL  COMPLETED  RUNNING  PENDING  FAILED  KILLED
+--------------------------------------------------------------------------------
+Map 1 ..........   SUCCEEDED      1          1        0        0       0       0
+Reducer 2 ......   SUCCEEDED      1          1        0        0       0       0                                                                       
+--------------------------------------------------------------------------------
+VERTICES: 02/02  [==========================>>] 100%  ELAPSED TIME: 9.51 s     
+--------------------------------------------------------------------------------
+OK                                                                                                                                                     
+20th Century Fox        5.064621090888977                                                                                                              
+CBS     2.202571392059326                                                                                                                              
+Disney  49.82402861118317                                                                                                                              
+Fox     27.06913387775421                                                                                                                              
+Independent     118.47682169545442                                                                                                                     
+Lionsgate       3.6130183935165405                                                                                                                     
+New Line        2.071000099182129                                                                                                                      
+Paramount       10.375999450683594                                                                                                                     
+Sony    19.345304012298584                                                                                                                             
+Summit  31.889809727668762                                                                                                                             
+The Weinstein Company   3.663341701030731                                                                                                              
+Universal       35.85022783279419                                                                                                                      
+Warner Bros.    44.714343190193176                                                                                                                     
+Time taken: 14.162 seconds, Fetched: 13 row(s)                                                                                                         
+hive> select id, title from movie where audiencescore > 60 and audiencescore < 70;                                                                     
+OK                                                                                                                                                     
+8       Waitress                                                                                                                                       
+12      Twilight: Breaking Dawn                                                                                                                        
+14      The Ugly Truth                                                                                                                                 
+16      The Time Traveler's Wife                                                                                                                       
+20      The Duchess                                                                                                                                    
+30      Rachel Getting Married                                                                                                                         
+36      Not Easily Broken                                                                                                                              
+37      No Reservations                                                                                                                                
+38      Nick and Norah's Infinite Playlist                                                                                                             
+48      Made of Honor                                                                                                                                  
+51      Life as We Know It                                                                                                                             
+53      Letters to Juliet                                                                                                                              
+59      It's Complicated                                                                                                                               
+63      Good Luck Chuck                                                                                                                                
+71      Dear John                                                                                                                                      
+74      A Serious Man                                                                                                                                  
+Time taken: 1.391 seconds, Fetched: 16 row(s)                                                                                                          
+hive> select title from movie where profit > 5 and rtscore > 70;                                                                                       
+OK                                                                                                                                                     
+Waitress                                                                                                                                               
+Midnight in Paris                                                                                                                                      
+Knocked Up                                                                                                                                             
+(500) Days of Summer                                                                                                                                   
+Time taken: 0.678 seconds, Fetched: 4 row(s)                                                                                                           
+hive> select count(title), studio from movie group by studio;                                                                                          
+Query ID = root_20220101142929_02dc6a7d-4194-4ea8-9389-d9edf147d89d                                                                                    
+Total jobs = 1                                                                                                                                         
+Launching Job 1 out of 1                                                                                                                               
+                                                                                                                                                       
+                                                                                                                                                       
+Status: Running (Executing on YARN cluster with App id application_1641040127148_0008)                                                                 
+                                                                                                                                                       
+--------------------------------------------------------------------------------
+        VERTICES      STATUS  TOTAL  COMPLETED  RUNNING  PENDING  FAILED  KILLED
+--------------------------------------------------------------------------------
+Map 1 ..........   SUCCEEDED      1          1        0        0       0       0
+Reducer 2 ......   SUCCEEDED      1          1        0        0       0       0                                                                       
+--------------------------------------------------------------------------------
+VERTICES: 02/02  [==========================>>] 100%  ELAPSED TIME: 7.77 s     
+--------------------------------------------------------------------------------
+OK                                                                                                                                                     
+2       20th Century Fox                                                                                                                               
+1       CBS                                                                                                                                            
+8       Disney                                                                                                                                         
+6       Fox                                                                                                                                            
+19      Independent                                                                                                                                    
+2       Lionsgate                                                                                                                                      
+1       New Line                                                                                                                                       
+4       Paramount                                                                                                                                      
+4       Sony                                                                                                                                           
+5       Summit                                                                                                                                         
+3       The Weinstein Company                                                                                                                          
+8       Universal                                                                                                                                      
+14      Warner Bros.                                                                                                                                   
+Time taken: 9.212 seconds, Fetched: 13 row(s)                                                                                                          
+hive> select id, title, profit from movie where year = 2009 order by profit desc limit 3;                                                              
+Query ID = root_20220101142945_4cdb4c9e-c19f-48d3-b78b-485ea6b61e06                                                                                    
+Total jobs = 1                                                                                                                                         
+Launching Job 1 out of 1                                                                                                                               
+                                                                                                                                                       
+                                                                                                                                                       
+Status: Running (Executing on YARN cluster with App id application_1641040127148_0008)                                                                 
+                                                                                                                                                       
+--------------------------------------------------------------------------------
+        VERTICES      STATUS  TOTAL  COMPLETED  RUNNING  PENDING  FAILED  KILLED
+--------------------------------------------------------------------------------
+Map 1 ..........   SUCCEEDED      1          1        0        0       0       0
+Reducer 2 ......   SUCCEEDED      1          1        0        0       0       0                                                                       
+--------------------------------------------------------------------------------
+VERTICES: 02/02  [==========================>>] 100%  ELAPSED TIME: 2.29 s     
+--------------------------------------------------------------------------------
+OK                                                                                                                                                     
+15      The Twilight Saga: New Moon     14.1964                                                                                                        
+77      (500) Days of Summer    8.096                                                                                                                  
+17      The Proposal    7.8675                                                                                                                         
+Time taken: 4.117 seconds, Fetched: 3 row(s)                                                                                                           
+hive>

@@ -1,0 +1,111 @@
+Todo.java
+
+public class Todo extends AppCompatActivity {
+    String path=null;
+    DBHelper dbHelper=null;
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_todo);
+        Bundle extras = getIntent().getExtras();
+        if(extras!=null){
+            path=extras.getString("path");
+        }
+        dbHelper = new DBHelper(this.getApplicationContext(),path+"TodoDB",null,1);
+    }
+
+    public void insert(View v){
+        EditText td = findViewById(R.id.tdate);
+        EditText tm = findViewById(R.id.ttime);
+        EditText task = findViewById(R.id.task);
+        String tdate = td.getText().toString();
+        String ttime = tm.getText().toString();
+        String ttask = task.getText().toString();
+        boolean result=dbHelper.insert(tdate,ttime,ttask);
+        if(result==true){
+            Toast.makeText(Todo.this,"Data Inserted Successfully",Toast.LENGTH_LONG).show();
+            Intent i = new Intent(Todo.this,MainActivity.class);
+            startActivity(i);
+        }
+        else{
+            Toast.makeText(Todo.this,"Insersion Failed",Toast.LENGTH_LONG).show();
+        }
+    }
+
+}
+
+MainActivity.java
+public class MainActivity extends AppCompatActivity {
+    String path=null;
+    TextView textView;
+    Cursor cursor=null;
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        path = new File(getApplicationInfo().dataDir,"database").getAbsolutePath();
+        DBHelper dbHelper = new DBHelper(this.getApplicationContext(),path+"TodoDB",null,1);
+        cursor = dbHelper.getTasks();
+        LinearLayout ll = findViewById(R.id.todolist);
+        while(cursor.moveToNext()){
+            textView = new TextView(this);
+            String task = cursor.getInt(0)+" "+cursor.getString(1)+" "+cursor.getString(2)+" "+cursor.getString(3);
+            textView.setText(task);
+            ll.addView(textView);
+        }
+
+    }
+    public void add(View v){
+       Intent i = new Intent(MainActivity.this,Todo.class);
+       i.putExtra("path",path);
+       startActivity(i);
+    }
+}
+
+DBHelper.java
+
+public class DBHelper extends SQLiteOpenHelper {
+    public DBHelper(@Nullable Context context, @Nullable String name, @Nullable SQLiteDatabase.CursorFactory factory, int version) {
+        super(context, name, factory, version);
+    }
+
+    @Override
+    public void onCreate(SQLiteDatabase db) {
+        String createTable = "create table todo(id INTEGER PRIMARY KEY  AUTOINCREMENT, tdate varchar(10), " +
+                "ttime varchar(10), task varchar(100)) ";
+            db.execSQL(createTable);
+    }
+
+    @Override
+    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        String dropTable = "drop table IF EXISTS todo";
+        db.execSQL(dropTable);
+    }
+
+    public boolean insert(String tdate, String ttime, String ttask) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("tdate",tdate);
+        values.put("ttime",ttime);
+        values.put("task",ttask);
+        db.insert("todo",null, values );
+        db.close();
+        return true;
+    }
+
+    public Cursor getTasks() {
+        String query = "Select * from todo order by tdate";
+        Cursor cursor=null;
+        SQLiteDatabase db = this.getReadableDatabase();
+        try{
+            cursor = db.rawQuery(query, null);
+
+
+            return cursor;
+        }
+        catch(Exception e){}
+        return cursor;
+    }
+}
+
+
